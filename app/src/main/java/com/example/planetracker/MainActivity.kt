@@ -10,15 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.planetracker.ui.theme.PlaneTrackerTheme
 import com.example.planetracker.views.map.MapView
+import com.example.planetracker.views.map.MapViewModel
 
 class MainActivity : ComponentActivity() {
+
+    val mapModel = MapViewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PlaneTrackerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    MapView()
+                    MapView(mapModel)
                 }
             }
         }

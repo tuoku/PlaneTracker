@@ -17,24 +17,24 @@ class Plane(
      * Unix timestamp (seconds) for the last position update. Can be null if no position report
      * was received by OpenSky within the past 15s.
      */
-    val timePosition: Int?,
+    val timePosition: Double?,
     /**
      * Unix timestamp (seconds) for the last update in general. This field is updated for any new,
      * valid message received from the transponder.
      */
-    val lastContact: Int,
+    val lastContact: Double,
     /**
      * WGS-84 longitude in decimal degrees. Can be null.
      */
-    val longitude: Float?,
+    val longitude: Double?,
     /**
      * WGS-84 latitude in decimal degrees. Can be null.
      */
-    val latitude: Float?,
+    val latitude: Double?,
     /**
      * Barometric altitude in meters. Can be null.
      */
-    val baroAltitude: Float?,
+    val baroAltitude: Double?,
     /**
      * Boolean value which indicates if the position was retrieved from a surface position report.
      */
@@ -42,16 +42,16 @@ class Plane(
     /**
      * Velocity over ground in m/s. Can be null.
      */
-    val velocity: Float?,
+    val velocity: Double?,
     /**
      * True track in decimal degrees clockwise from north (north=0°). Can be null.
      */
-    val trueTrack: Float?,
+    val trueTrack: Double?,
     /**
      * Vertical rate in m/s. A positive value indicates that the airplane is climbing,
      * a negative value indicates that it descends. Can be null.
      */
-    val verticalRate: Float?,
+    val verticalRate: Double?,
     /**
      * IDs of the receivers which contributed to this state vector.
      * Is null if no filtering for sensor was used in the request.
@@ -60,7 +60,7 @@ class Plane(
     /**
      * Geometric altitude in meters. Can be null.
      */
-    val geoAltitude: Float?,
+    val geoAltitude: Double?,
     /**
      * The transponder code aka Squawk. Can be null.
      */
@@ -72,7 +72,7 @@ class Plane(
     /**
      * Origin of this state’s position: 0 = ADS-B, 1 = ASTERIX, 2 = MLAT
      */
-    val positionSource: Int,
+    val positionSource: Double,
 
 
     ) {
