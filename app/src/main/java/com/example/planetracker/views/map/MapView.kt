@@ -8,12 +8,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -26,6 +29,7 @@ import com.google.android.gms.maps.model.*
 import kotlinx.coroutines.*
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GoogleMaps(model: MapViewModel) {
     val planes: List<Plane> by model.allPlanes.observeAsState(emptyList())
@@ -42,15 +46,19 @@ fun GoogleMaps(model: MapViewModel) {
     builder.include(LatLng(70.833, 42.245))
     builder.include(LatLng(56.550, 38.426))
     val eu: LatLngBounds = builder.build()
+    val bottomState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val coroutineScope = rememberCoroutineScope()
+
 
     val helsinki = LatLng(60.16345897617068, 24.930291611319266)
+    var selectedMarker: Marker? by remember { mutableStateOf(null)}
 
 
         planes.forEach {
 
             if (it.latitude != null && it.longitude != null && mMap != null) {
 
-                    markers.add(
+                 markers.add(
                         MarkerOptions()
                             .title(it.icao24)
                             .position(LatLng(it.latitude, it.longitude))
@@ -58,6 +66,7 @@ fun GoogleMaps(model: MapViewModel) {
                                 BitmapDescriptorFactory.fromResource(R.drawable.aeroplane)
                             )
                             .flat(true)
+
                             .rotation(it.trueTrack?.toFloat() ?: 0f)
                     )
                 }
@@ -67,40 +76,51 @@ fun GoogleMaps(model: MapViewModel) {
 
         if(mMap != null) {
             markers.forEach {
-                mMap!!.addMarker(it)
+               val marker = mMap!!.addMarker(it)
+                marker!!.tag = planes.find {plane -> plane.icao24 == it.title }
             }
 
         }
 
 
 
+    ModalBottomSheetLayout(
+        sheetState = bottomState,
+        sheetContent = {
+            val plane = selectedMarker?.tag as Plane?
+            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+               Text("ICAO24: ${plane?.icao24 ?: "???" }")
+                Text("Callsign: ${plane?.callsign ?: "???" }")
+                Text("Origin: ${plane?.originCountry ?: "???" }")
+            }
+        }
+    )  {
+                AndroidView(
+                    factory = { mapView },
 
-    Box(){
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-            AndroidView(
-                factory = {mapView},
+                    ) { mapView: MapView ->
+                    CoroutineScope(Dispatchers.Main).launch {
+
+                        mapView.getMapAsync { map ->
+
+                            mMap = map
+                            mMap!!.setOnMarkerClickListener {
+                                selectedMarker = it
+                                coroutineScope.launch {
+                                    bottomState.show()
+                                }
+                                true
+                            }
 
 
-            ) { mapView: MapView ->
-                CoroutineScope(Dispatchers.Main).launch {
-
-                    mapView.getMapAsync { map ->
-
-                        mMap = map
-
+                        }
 
                     }
-
                 }
             }
-        }
 
-    }
+
 
 }
 

@@ -22,6 +22,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.planetracker.ui.theme.PlaneTrackerTheme
 import com.example.planetracker.views.ar.ARView
+import com.example.planetracker.views.favs.Favs
 import com.example.planetracker.views.map.GoogleMaps
 import com.example.planetracker.views.map.MapViewModel
 import com.google.android.gms.maps.MapView
@@ -48,25 +49,29 @@ class MainActivity : ComponentActivity() {
                         items.forEach { screen ->
                             BottomNavigationItem(
                                 icon = {
-                                    (if (screen.label == "Map") Icon(
-                                        Icons.Filled.Public,
-                                        contentDescription = null
-                                    ) else Icon(Icons.Filled.Camera, contentDescription = null))
+                                    when(screen.label) {
+                                        "Map" -> Icon(
+                                            Icons.Filled.Public,
+                                            contentDescription = null
+                                        )
+                                        "Favorites" -> Icon(
+                                            Icons.Filled.Favorite,
+                                            contentDescription = null
+                                        )
+                                        "AR" -> Icon(Icons.Filled.Camera, contentDescription = null)
+                                    }
+
                                 },
                                 label = { Text(screen.label) },
                                 selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                                 onClick = {
                                     navController.navigate(screen.route) {
-                                        // Pop up to the start destination of the graph to
-                                        // avoid building up a large stack of destinations
-                                        // on the back stack as users select items
+
                                         popUpTo(navController.graph.findStartDestination().id) {
                                             saveState = true
                                         }
-                                        // Avoid multiple copies of the same destination when
-                                        // reselecting the same item
+
                                         launchSingleTop = true
-                                        // Restore state when reselecting a previously selected item
                                         restoreState = true
                                     }
                                 })
@@ -76,6 +81,7 @@ class MainActivity : ComponentActivity() {
                 }) {
                     NavHost(navController, startDestination = Screen.Map.route) {
                         composable(Screen.Map.route) { GoogleMaps(model = mapModel) }
+                        composable(Screen.Favorites.route) { Favs() }
                         composable(Screen.AR.route) { ARView() }
                     }
 
@@ -87,11 +93,13 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen(val route: String, val label: String) {
     object Map : Screen("map", "Map")
+    object Favorites: Screen("favs", "Favorites")
     object AR : Screen("ar", "AR")
 }
 
 val items = listOf(
     Screen.Map,
+    Screen.Favorites,
     Screen.AR,
 )
 
