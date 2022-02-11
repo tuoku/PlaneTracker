@@ -28,6 +28,13 @@ object OpenSkyAPI {
     interface Service {
         @GET("states/all")
         suspend fun allPlanes(@Query("")p: String = ""): Model.Res
+
+        @GET("states/all")
+        suspend fun planesByBounds(
+            @Query("lamin")lamin: String,
+            @Query("lomin")lomin: String,
+            @Query("lamax")lamax: String,
+            @Query("lamin")lomax: String): Model.Res
     }
 
     private val retrofit = Retrofit.Builder()

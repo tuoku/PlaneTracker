@@ -2,6 +2,7 @@ package com.example.planetracker.repos
 
 import com.example.planetracker.apis.OpenSkyAPI
 import com.example.planetracker.models.Plane
+import com.google.android.gms.maps.model.LatLngBounds
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Headers
@@ -14,6 +15,12 @@ class OpenSkyRepo {
 
     suspend fun getAllPlanes(): List<Plane> {
         val states = call.allPlanes().states ?: emptyList()
+        return constructPlanes(states).subList(0,99) // only 100 for now
+                                                      // because of terrible performance
+    }
+
+    suspend fun getPlanesByBounds(lamax: String, lomax: String, lamin: String, lomin: String): List<Plane> {
+        val states = call.planesByBounds(lamax = lamax, lomax = lomax, lamin = lamin, lomin = lomin).states ?: emptyList()
         return constructPlanes(states)
     }
 
