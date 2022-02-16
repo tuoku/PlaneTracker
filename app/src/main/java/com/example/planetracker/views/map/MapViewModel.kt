@@ -1,11 +1,17 @@
 package com.example.planetracker.views.map
 
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.planetracker.apis.OpenSkyAPI
 import com.example.planetracker.models.Plane
 import com.example.planetracker.repos.OpenSkyRepo
+import com.google.android.gms.maps.GoogleMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -13,8 +19,14 @@ import java.lang.Exception
 
 class MapViewModel : ViewModel() {
 
+    var mMap: GoogleMap? = null
+
     private val repo: OpenSkyRepo = OpenSkyRepo()
-    val allPlanes = MutableLiveData<List<Plane>>()
+    var _allPlanes = MutableLiveData<SnapshotStateList<Plane>>()
+    val allPlanes: LiveData<SnapshotStateList<Plane>>
+        get() = _allPlanes
+    val planeImpl = mutableStateListOf<Plane>()
+
     val planesInRegion = MutableLiveData<List<Plane>>()
 
     // Bounds for northern europe
@@ -23,12 +35,16 @@ class MapViewModel : ViewModel() {
     val lomin = "0.0"
     val lomax = "35.0"
 
+    val handler = Handler(Looper.getMainLooper())
+    private val refreshIntervalMillis = 0
+
     fun getAllPlanes () {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val serverResp = withContext(Dispatchers.IO) { repo.getAllPlanes() }
+                val serverResp = repo.getAllPlanes()
                 print("PLANES FOUND: " + serverResp.size)
-                allPlanes.postValue(serverResp)
+                planeImpl.addAll(serverResp)
+                _allPlanes.postValue(planeImpl)
             } catch (e: Exception) {
                 print(e.stackTrace)
             }
