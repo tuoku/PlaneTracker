@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -82,7 +83,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController, startDestination = Screen.Map.route) {
                         composable(Screen.Map.route) { GoogleMaps(model = mapModel) }
                         composable(Screen.Favorites.route) { Favs() }
-                        composable(Screen.AR.route) { ARView() }
+                        composable(Screen.AR.route) { ARView(LocalContext.current) }
                     }
 
                 }
