@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera.ar"
     android:required="true" />
+    <uses-feature android:name="android.hardware.camera.ar"
+    android:required="true" />
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
     <application
 
         android:allowBackup="true"
@@ -27,6 +32,8 @@
         <meta-data android:name="com.google.ar.core"
             android:value="required" />
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="${MAPS_API_KEY}"/>
+        <meta-data android:name="com.google.ar.core"
+            android:value="required" />
     </application>
 
 </manifest>
