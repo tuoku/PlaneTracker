@@ -16,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.Exception
+import java.util.*
+import kotlin.concurrent.timerTask
 
 class MapViewModel : ViewModel() {
 
@@ -35,20 +37,29 @@ class MapViewModel : ViewModel() {
     val lomin = "0.0"
     val lomax = "35.0"
 
-    val handler = Handler(Looper.getMainLooper())
-    private val refreshIntervalMillis = 0
+    private val refreshIntervalMillis = 5000
+
+
+
+
+
 
     fun getAllPlanes () {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val serverResp = repo.getAllPlanes()
-                print("PLANES FOUND: " + serverResp.size)
-                planeImpl.addAll(serverResp)
-                _allPlanes.postValue(planeImpl)
-            } catch (e: Exception) {
-                print(e.stackTrace)
+        Timer().scheduleAtFixedRate(timerTask {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val serverResp = repo.getAllPlanes()
+                    print("PLANES FOUND: " + serverResp.size)
+                    planeImpl.clear()
+                    planeImpl.addAll(serverResp)
+                   // _allPlanes.postValue(null)
+                    _allPlanes.postValue(planeImpl)
+                } catch (e: Exception) {
+                    print(e.stackTrace)
+                }
             }
-        }
+        }, refreshIntervalMillis.toLong(),refreshIntervalMillis.toLong())
+
     }
 
     fun getPlanesByBounds() {
