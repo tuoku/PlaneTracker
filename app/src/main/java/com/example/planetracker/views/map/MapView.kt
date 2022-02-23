@@ -66,6 +66,7 @@ fun GoogleMaps(model: MapViewModel) {
     var selectedMarker: Marker? by remember { mutableStateOf(null) }
     val planePainter = painterResource(id = R.drawable.plane_placeholder)
 
+
     LaunchedEffect(true) {
         model.getAllPlanes()
     }
