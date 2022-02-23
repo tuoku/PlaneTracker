@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -44,7 +46,7 @@ import kotlinx.coroutines.launch
 fun GoogleMaps(model: MapViewModel) {
     val planes by model.allPlanes.observeAsState()
     val planesNorthEurope: List<Plane> by model.planesInRegion.observeAsState(emptyList())
-
+    var favorites by remember {  mutableStateOf(mutableListOf("")) }
     // model.getPlanesByBounds()
 
     var mapView = rememberMapViewWithLifeCycle()
@@ -109,14 +111,14 @@ fun GoogleMaps(model: MapViewModel) {
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize())
                         Column(
-                            Modifier.fillMaxWidth().height((planePainter.intrinsicSize.height * 0.63).dp)
+                            Modifier.fillMaxWidth().height((planePainter.intrinsicSize.height * 0.25).dp)
                                 .background(
                                     Brush.verticalGradient(
                                         listOf(Color.Transparent, Color.Black),
                                         0f,
-                                        1200f,
+                                        250f,
                                     )
-                                )
+                                ).align(Alignment.BottomCenter)
                         ) {
 
 
@@ -125,9 +127,12 @@ fun GoogleMaps(model: MapViewModel) {
 
 
 
-                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier.align(Alignment.TopEnd)) {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(Icons.Filled.Star, contentDescription = null)
+                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)) {
+                        IconButton(onClick = { favorites.add(plane!!.icao24) }) {
+                            var icon =  if (favorites.contains((selectedMarker?.tag as Plane?)?.icao24)) Icons.Outlined.StarOutline  else  Icons.Filled.Star
+                            Icon(imageVector = icon,
+                                contentDescription = null, tint = Color.Yellow, modifier = Modifier.size(40.dp))
+
                         }
                     }
 
