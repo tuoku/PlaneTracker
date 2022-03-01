@@ -53,7 +53,13 @@ android {
     }
 }
 
+apply plugin: "kotlin-kapt"
 dependencies {
+    def roomVersion = "2.4.1"
+    implementation "androidx.room:room-runtime:$roomVersion"
+    annotationProcessor "androidx.room:room-compiler:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
     implementation "com.gorisse.thomas.sceneform:sceneform:1.20.4"
     implementation 'androidx.camera:camera-lifecycle:1.1.0-beta01'
     implementation 'androidx.camera:camera-view:1.1.0-beta01'

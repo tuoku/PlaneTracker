@@ -1,9 +1,14 @@
 package com.example.planetracker.models
 
-class Plane(
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
+data class Plane(
     /**
      * Unique ICAO 24-bit address of the transponder in hex string representation.
      */
+    @PrimaryKey
     val icao24: String,
     /**
      * Callsign of the vehicle (8 chars). Can be null if no callsign has been received.
@@ -76,5 +81,8 @@ class Plane(
 
 
     ) {
+
+    override fun toString() = "Plane $icao24, callsign $callsign"
+
 
 }

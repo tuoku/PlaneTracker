@@ -37,12 +37,7 @@ class MapViewModel : ViewModel() {
     val lomin = "0.0"
     val lomax = "35.0"
 
-    private val refreshIntervalMillis = 5000
-
-
-
-
-
+    private val refreshIntervalMillis = 10000
 
     fun getAllPlanes () {
         Timer().scheduleAtFixedRate(timerTask {

@@ -33,6 +33,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.planetracker.R
 import com.example.planetracker.models.Plane
+import com.example.planetracker.views.favs.FavsViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.*
@@ -43,10 +44,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun GoogleMaps(model: MapViewModel) {
+fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
     val planes by model.allPlanes.observeAsState()
     val planesNorthEurope: List<Plane> by model.planesInRegion.observeAsState(emptyList())
-    var favorites by remember {  mutableStateOf(mutableListOf("")) }
+    val favorites = favsViewModel.getFavorites().observeAsState(listOf())
     // model.getPlanesByBounds()
 
     var mapView = rememberMapViewWithLifeCycle()
@@ -129,8 +130,20 @@ fun GoogleMaps(model: MapViewModel) {
 
 
                     Row(horizontalArrangement = Arrangement.End, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)) {
-                        IconButton(onClick = { favorites.add(plane!!.icao24) }) {
-                            var icon =  if (favorites.contains((selectedMarker?.tag as Plane?)?.icao24)) Icons.Outlined.StarOutline  else  Icons.Filled.Star
+                        IconButton(onClick = {
+                            if(plane != null) {
+                                if((favorites.value.firstOrNull { it.icao24 == plane.icao24 }) == null) {
+                                    favsViewModel.addFavorite(plane)
+                                } else {
+                                    favsViewModel.removeFavoriteByIcao(plane.icao24)
+                                }
+
+                            }
+                        }) {
+                            var icon =
+                                if ((favorites.value.firstOrNull { it.icao24 == plane?.icao24 ?: "VERY CONFUSING ICAO STRING" }) != null) {
+                                    Icons.Filled.Star
+                                }   else Icons.Outlined.StarOutline
                             Icon(imageVector = icon,
                                 contentDescription = null, tint = Color.Yellow, modifier = Modifier.size(40.dp))
 

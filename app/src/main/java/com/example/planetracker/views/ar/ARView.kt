@@ -67,6 +67,7 @@ fun ARView(context: Context) {
                 .clip(CircleShape)) {
                     AndroidView(factory = {mapView}) {
                         it.getMapAsync {
+                            it.isMyLocationEnabled = true
                             arViewModel.mMap = it
                         }
                     }
@@ -86,8 +87,12 @@ fun ARView(context: Context) {
      val cameraPermissionState = rememberPermissionState(
          android.Manifest.permission.CAMERA
      )
+     val locationPermissionState = rememberPermissionState(
+         android.Manifest.permission.ACCESS_FINE_LOCATION
+     )
     LaunchedEffect(true) {
         cameraPermissionState.launchPermissionRequest()
+        locationPermissionState.launchPermissionRequest()
     }
 
 
