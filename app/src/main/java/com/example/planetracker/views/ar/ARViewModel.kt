@@ -67,12 +67,14 @@ class ARViewModel(context: Context) : ViewModel(), SensorEventListener {
             SensorManager.getOrientation(rotationMatrix, orientationAngles)
             orientation = orientationAngles
             if (mMap != null) {
-                Log.d("AZIMUTH", (orientationAngles[0] * 57.29578).toString())
+                Log.d("AZIMUTH", (((Math.toDegrees(
+                    orientationAngles[0].toDouble()
+                ) + 180.0).toFloat()).toString()))
 
                 val cameraPos = mMap!!.cameraPosition
                 val pos = CameraPosition.builder(cameraPos).bearing(((Math.toDegrees(
                     orientationAngles[0].toDouble()
-                ) + 180.0).toFloat())).build() // radians to degrees
+                ) + 360).toFloat() % 360)).build() // radians to degrees
                 mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
             }
         }
