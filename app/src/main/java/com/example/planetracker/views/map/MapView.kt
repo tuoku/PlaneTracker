@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -32,7 +33,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.planetracker.R
+import com.example.planetracker.apis.AeroDataBoxAPI
 import com.example.planetracker.models.Plane
+import com.example.planetracker.models.PlaneInfo
+import com.example.planetracker.repos.AeroDataBoxRepo
 import com.example.planetracker.views.favs.FavsViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -40,12 +44,16 @@ import com.google.android.gms.maps.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import coil.compose.rememberImagePainter
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, coil.annotation.ExperimentalCoilApi::class)
 @Composable
 fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
     val planes by model.allPlanes.observeAsState()
+    val planeInfo: PlaneInfo? by model.planeInfo.observeAsState(null)
+    val planeImg: String? by model.planeImg.observeAsState(null)
     val planesNorthEurope: List<Plane> by model.planesInRegion.observeAsState(emptyList())
     val favorites = favsViewModel.getFavorites().observeAsState(listOf())
     // model.getPlanesByBounds()
@@ -65,7 +73,11 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
     val helsinki = LatLng(60.16345897617068, 24.930291611319266)
     var selectedMarker: Marker? by remember { mutableStateOf(null) }
-    val planePainter = painterResource(id = R.drawable.plane_placeholder)
+    val planePainter = if (planeImg == null){
+       painterResource(id = R.drawable.plane_placeholder)
+    } else {
+        rememberImagePainter(planeImg)
+    }
 
 
     LaunchedEffect(true) {
@@ -96,40 +108,68 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
         sheetShape = RoundedCornerShape(32.dp),
         sheetState = bottomState,
         sheetContent = {
+
             val plane = selectedMarker?.tag as Plane?
+
+            if (plane != null) {
+                if ((model.planeInfoCache.firstOrNull { it.hexIcao?.lowercase() == plane.icao24.lowercase() }) == null) {
+                    model.getPlaneInfo(plane.icao24).also {
+                        planeInfo?.reg?.let { it1 -> model.getPlaneImage(it1) }
+                    }
+
+                }
+
+            }
             Column(
                 verticalArrangement = Arrangement.Top,
                 modifier = Modifier.fillMaxSize()
 
             ) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height((planePainter.intrinsicSize.height * 0.63).dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
 
                 ){
 
+                        (if(planeImg != null) {
+                            if(planeImg == "404") {
+                                Text("No image found", modifier = Modifier.align(Alignment.Center))
+                            } else {
+                                Image(painter = planePainter,
+                                    alignment = Alignment.TopCenter,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize())
+                            }
 
-                        Image(painter = planePainter,
-                            alignment = Alignment.TopCenter,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize())
+                        } else {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        })
+
+
                         Column(
-                            Modifier.fillMaxWidth().height((planePainter.intrinsicSize.height * 0.25).dp)
+                            Modifier
+                                .fillMaxWidth()
+                                .height(80.dp)
                                 .background(
                                     Brush.verticalGradient(
                                         listOf(Color.Transparent, Color.Black),
                                         0f,
                                         250f,
                                     )
-                                ).align(Alignment.BottomCenter)
+                                )
+                                .align(Alignment.BottomCenter)
                         ) {
 
 
                         }
-                    Text(" Finnair Airbus 783", modifier = Modifier.align(Alignment.BottomStart), color = Color.White, fontSize = 32.sp)
+                    Text(planeInfo?.typeName ?: "", modifier = Modifier.align(Alignment.BottomStart), color = Color.White, fontSize = 32.sp)
 
 
 
-                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)) {
                         IconButton(onClick = {
                             if(plane != null) {
                                 if((favorites.value.firstOrNull { it.icao24 == plane.icao24 }) == null) {
@@ -156,6 +196,10 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
                 Text("ICAO24: ${plane?.icao24 ?: "???"}")
                 Text("Callsign: ${plane?.callsign ?: "???"}")
                 Text("Origin: ${plane?.originCountry ?: "???"}")
+                Text("Type: ${planeInfo?.typeName ?: "???"}")
+                Text("Registration: ${planeInfo?.reg ?: "???"}")
+                Text("Operated by: ${planeInfo?.airlineName ?: "???"}")
+
             }
         }
     ) {
@@ -191,7 +235,7 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 fun updateMarkers(model: MapViewModel, markers: List<MarkerOptions>) {
     val handler = Handler(Looper.getMainLooper())
     var x = 0
-    val DELAY: Long = 1
+    val DELAY: Long = 3
     if (model.mMap != null) {
         model.mMap!!.clear()
         markers.forEach {

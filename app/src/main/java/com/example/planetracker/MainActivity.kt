@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.planetracker.apis.AeroDataBoxAPI
 import com.example.planetracker.ui.theme.PlaneTrackerTheme
 import com.example.planetracker.views.ar.ARView
 import com.example.planetracker.views.favs.FavsView
@@ -30,6 +31,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var mapView: MapView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        AeroDataBoxAPI.setContext(this)
 
         favsViewModel = FavsViewModel(application)
 
