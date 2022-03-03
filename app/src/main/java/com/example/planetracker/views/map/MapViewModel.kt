@@ -59,6 +59,10 @@ class MapViewModel : ViewModel() {
 
     private val refreshIntervalMillis = 0
 
+    fun invalidateInfos() {
+        _flight.postValue(null)
+    }
+
     fun getPlaneInfo(icao24: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {

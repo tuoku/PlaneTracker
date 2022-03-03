@@ -72,8 +72,10 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
     builder.include(LatLng(56.550, 38.426))
     val eu: LatLngBounds = builder.build()
     val bottomState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+
     val coroutineScope = rememberCoroutineScope()
     val builtMarkers: MutableList<Marker> = mutableListOf()
+
 
 
     val helsinki = LatLng(60.16345897617068, 24.930291611319266)
@@ -118,6 +120,16 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
                 painterResource(id = R.drawable.plane_placeholder)
             } else {
                 rememberImagePainter(flight!!.aircraft?.image?.url ?: "")
+            }
+            var lastState: ModalBottomSheetValue = ModalBottomSheetValue.Hidden
+
+            if(bottomState.currentValue != ModalBottomSheetValue.Hidden) {
+                lastState = bottomState.currentValue
+            }
+            if(bottomState.currentValue == ModalBottomSheetValue.Hidden && lastState != ModalBottomSheetValue.Hidden) {
+                lastState = bottomState.currentValue
+                model.invalidateInfos()
+                selectedMarker = null
             }
 
 
@@ -306,9 +318,13 @@ fun updateMarkers(model: MapViewModel, markers: List<MarkerOptions>) {
 
             handler.postDelayed(
                 {
-                    val marker = model.mMap!!.addMarker(it)
-                    marker!!.tag = model.allPlanes.value?.find { plane -> plane.icao24 == it.title }
-
+                    try {
+                        val marker = model.mMap!!.addMarker(it)
+                        marker!!.tag =
+                            model.allPlanes.value?.find { plane -> plane.icao24 == it.title }
+                    } catch (e: Exception) {
+                        print(e.message)
+                    }
                 }, DELAY * x++.toLong()
             )
 
