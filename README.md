@@ -10,6 +10,12 @@ If you want to use this app you need an seperate api key.
 
 Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://www.aerodatabox.com/home).
 
+## Getting started
+1. Clone this repository or download the .zip
+2. Open in Android Studio
+3. Follow all the steps outlined in the "Getting your API keys" section below
+4. Run! (make sure your device has Google Play Services installed)
+
 ## Getting your API keys
 ### AeroDataBox API
 1. Go to https://rapidapi.com/aedbx-aedbx/api/aerodatabox/
