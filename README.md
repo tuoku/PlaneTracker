@@ -2,13 +2,14 @@
 
 An app for airplane identification & tracking utilizing augmented reality for identifying planes flying overhead.
 
-How to use:
-
-First when you open the app you will see a worldmapview, and planes fying on there. When you press selected plane from the map you will see its details. Then we have a list of favourites ( You can add your own favourite planes(routes) there also.) And then we have an AR view, which is supposed to give you the details about certain plane. 
-If you want to use this app you need an seperate api key.
-
-
 Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://www.aerodatabox.com/home).
+
+## Features
+* Watch planes fly all around the world in real time with positions derived from ADS-B and Mode S messages
+* Tap a plane to see information about the plane and its flight, including an image of the actual aircraft
+* Save planes as favorites and check where they're flying later
+* See information about planes flying around you simply by pointing your phone at them
+* See which planes are currently flying at the fastest speeds in the world, which are flying the highest and more
 
 ## Getting started
 1. Clone this repository or download the .zip
