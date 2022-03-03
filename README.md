@@ -40,4 +40,4 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 
 ## Attributions
 A big thanks to
-* @bhurling for [country codes to emoji flags](https://gist.github.com/bhurling/c955c778f7a0765aaffd9214b12b3963)
+* [@bhurling](https://gist.github.com/bhurling) for [country codes to emoji flags](https://gist.github.com/bhurling/c955c778f7a0765aaffd9214b12b3963)
