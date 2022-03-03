@@ -20,7 +20,7 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 ### AeroDataBox API
 1. Go to https://rapidapi.com/aedbx-aedbx/api/aerodatabox/
 2. Log in / register to RapidAPI
-3. Subscribe to AeroDataBox API (free plan works for ~60 plane taps per month per API key)
+3. Subscribe to AeroDataBox API (free plan works for ~200 plane taps per month per API key)
 4. Copy your X-RapidAPI-Key from the API playground
 5. Paste it into the `local.properties` file into a new line: `RAPID_API_KEY={your_api_key}` (without the braces)
 
