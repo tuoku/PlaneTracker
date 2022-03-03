@@ -16,6 +16,7 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 3. Follow all the steps outlined in the "Getting your API keys" section below
 4. Run! (make sure your device has Google Play Services installed)
 
+
 ## Getting your API keys
 ### AeroDataBox API
 1. Go to https://rapidapi.com/aedbx-aedbx/api/aerodatabox/
@@ -35,3 +36,8 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 
 ### OpenSky API
 1. Key not required :)
+
+
+## Attributions
+A big thanks to
+* @bhurling for [country codes to emoji flags](https://gist.github.com/bhurling/c955c778f7a0765aaffd9214b12b3963)
