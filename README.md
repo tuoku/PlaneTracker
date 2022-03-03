@@ -17,3 +17,15 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 3. Subscribe to AeroDataBox API (free plan works for ~60 plane taps per month per API key)
 4. Copy your X-RapidAPI-Key from the API playground
 5. Paste it into the `local.properties` file into a new line: `RAPID_API_KEY={your_api_key}` (without the braces)
+
+### Google Maps API
+1. Go to https://console.cloud.google.com/
+2. Log in / register
+3. Choose / create a project
+4. Click "APIs & Services" -> "Credentials"
+5. Click "Create credentials" -> "API key"
+6. Copy your API key
+7. Paste it into the `local.properties` file into a new line: `MAPS_API_KEY={your_api_key}` (without the braces)
+
+### OpenSky API
+1. Key not required :)
