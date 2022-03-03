@@ -4,14 +4,12 @@ import android.content.Context
 import android.content.res.Resources
 import com.example.planetracker.R
 import com.example.planetracker.models.PlaneInfo
+import com.example.planetracker.models.flight.Flight
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Headers
-import retrofit2.http.Path
+import retrofit2.http.*
 
 
 object AeroDataBoxAPI {
@@ -77,6 +75,15 @@ object AeroDataBoxAPI {
             @Path("reg")registration: String,
             @Header("x-rapidapi-key") apiKey: String = appContext.getString(R.string.rapid_api_key)): Model.Res
 
+        @Headers(
+            "x-rapidapi-host: aerodatabox.p.rapidapi.com",
+        )
+        @GET("flights/icao24/{icao}")
+        suspend fun flightStatus(
+            @Path("icao")icao: String,
+            @Query("withAircraftImage")withImg: Boolean = true,
+            @Header("x-rapidapi-key") apiKey: String = appContext.getString(R.string.rapid_api_key)
+        ): List<Flight>
     }
 
     private val retrofit = Retrofit.Builder()

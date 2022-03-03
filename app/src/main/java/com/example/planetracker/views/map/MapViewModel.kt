@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.planetracker.apis.AeroDataBoxAPI
 import com.example.planetracker.models.Plane
 import com.example.planetracker.models.PlaneInfo
+import com.example.planetracker.models.flight.Flight
 import com.example.planetracker.repos.AeroDataBoxRepo
 import com.example.planetracker.repos.OpenSkyRepo
 import com.google.android.gms.maps.GoogleMap
@@ -41,14 +42,20 @@ class MapViewModel : ViewModel() {
 
     val planeImgCache = mutableListOf<AeroDataBoxAPI.Model.Res>()
 
+    var _flight = MutableLiveData<Flight>()
+    val flight: LiveData<Flight>
+        get() = _flight
+
+    val flightCache = mutableListOf<Flight>()
+
 
     val planesInRegion = MutableLiveData<List<Plane>>()
 
-    // Bounds for northern europe
-    val lamin = "53.9"
-    val lamax = "70.1"
-    val lomin = "0.0"
-    val lomax = "35.0"
+    // Bounds for europe
+    val lamin = "34.885931"
+    val lamax = "71.965388"
+    val lomin = "-21.445313"
+    val lomax = "46.933594"
 
     private val refreshIntervalMillis = 0
 
@@ -73,6 +80,18 @@ class MapViewModel : ViewModel() {
             } catch (e: Exception) {
                 print(e.message)
                 _planeImg.postValue("404")
+            }
+        }
+    }
+
+    fun getFlightStatus(icao24: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val resp = aeroDataBoxRepo.getFlightStatus(icao24)
+                flightCache.addAll(resp)
+                _flight.postValue(resp[0])
+            } catch (e: Exception) {
+                print(e.message)
             }
         }
     }

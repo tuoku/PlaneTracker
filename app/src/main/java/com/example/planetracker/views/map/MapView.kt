@@ -3,12 +3,14 @@ package com.example.planetracker.views.map
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -46,6 +48,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import coil.compose.rememberImagePainter
+import com.example.planetracker.models.flight.Flight
+import com.google.maps.android.SphericalUtil
+import java.util.*
 
 
 @OptIn(ExperimentalMaterialApi::class, coil.annotation.ExperimentalCoilApi::class)
@@ -73,11 +78,9 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
     val helsinki = LatLng(60.16345897617068, 24.930291611319266)
     var selectedMarker: Marker? by remember { mutableStateOf(null) }
-    val planePainter = if (planeImg == null){
-       painterResource(id = R.drawable.plane_placeholder)
-    } else {
-        rememberImagePainter(planeImg)
-    }
+
+
+
 
 
     LaunchedEffect(true) {
@@ -88,37 +91,42 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
         if (it.latitude != null && it.longitude != null && model.mMap != null) {
 
-            markers.add(
-                MarkerOptions()
-                    .title(it.icao24)
-                    .position(LatLng(it.latitude, it.longitude))
-                    .icon(
-                        BitmapDescriptorFactory.fromResource(R.drawable.aeroplane)
-                    )
-                    .flat(true)
+            if(SphericalUtil.computeDistanceBetween(helsinki, LatLng(it.latitude,it.longitude)) <= 1500000) {
+                markers.add(
+                    MarkerOptions()
+                        .title(it.icao24)
+                        .position(LatLng(it.latitude, it.longitude))
+                        .icon(
+                            BitmapDescriptorFactory.fromResource(R.drawable.aeroplane)
+                        )
+                        .flat(true)
 
-                    .rotation(it.trueTrack?.toFloat() ?: 0f)
-            )
+                        .rotation(it.trueTrack?.toFloat() ?: 0f)
+                )
+            }
         }
 
 
     }
 
-   ModalBottomSheetLayout(
+    ModalBottomSheetLayout(
         sheetShape = RoundedCornerShape(32.dp),
         sheetState = bottomState,
         sheetContent = {
+            val flight: Flight? by model.flight.observeAsState(null)
+            val planePainter = if (flight == null) {
+                painterResource(id = R.drawable.plane_placeholder)
+            } else {
+                rememberImagePainter(flight!!.aircraft?.image?.url ?: "")
+            }
+
 
             val plane = selectedMarker?.tag as Plane?
 
             if (plane != null) {
-                if ((model.planeInfoCache.firstOrNull { it.hexIcao?.lowercase() == plane.icao24.lowercase() }) == null) {
-                    model.getPlaneInfo(plane.icao24).also {
-                        planeInfo?.reg?.let { it1 -> model.getPlaneImage(it1) }
-                    }
-
+                if ((model.flightCache.firstOrNull { it.aircraft?.modeS?.lowercase() == plane.icao24.lowercase() }) == null) {
+                    model.getFlightStatus(plane.icao24)
                 }
-
             }
             Column(
                 verticalArrangement = Arrangement.Top,
@@ -130,49 +138,58 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
                         .fillMaxWidth()
                         .height(250.dp)
 
-                ){
+                ) {
 
-                        (if(planeImg != null) {
-                            if(planeImg == "404") {
-                                Text("No image found", modifier = Modifier.align(Alignment.Center))
-                            } else {
-                                Image(painter = planePainter,
-                                    alignment = Alignment.TopCenter,
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize())
-                            }
-
+                    (if (flight != null) {
+                        if ((flight!!.aircraft?.image?.url ?: "").isEmpty()) {
+                            Text("No image found", modifier = Modifier.align(Alignment.Center))
                         } else {
-                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                        })
-
-
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(80.dp)
-                                .background(
-                                    Brush.verticalGradient(
-                                        listOf(Color.Transparent, Color.Black),
-                                        0f,
-                                        250f,
-                                    )
-                                )
-                                .align(Alignment.BottomCenter)
-                        ) {
-
-
+                            Image(
+                                painter = planePainter,
+                                alignment = Alignment.TopCenter,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
-                    Text(planeInfo?.typeName ?: "", modifier = Modifier.align(Alignment.BottomStart), color = Color.White, fontSize = 32.sp)
+
+                    } else {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    })
+
+
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color.Transparent, Color.Black),
+                                    0f,
+                                    250f,
+                                )
+                            )
+                            .align(Alignment.BottomCenter)
+                    ) {
+
+
+                    }
+                    Text(
+                        flight?.aircraft?.model ?: "",
+                        modifier = Modifier.align(Alignment.BottomStart).padding(6.dp),
+                        color = Color.White,
+                        fontSize = 32.sp
+                    )
 
 
 
-                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.End, modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp)
+                    ) {
                         IconButton(onClick = {
-                            if(plane != null) {
-                                if((favorites.value.firstOrNull { it.icao24 == plane.icao24 }) == null) {
+                            if (plane != null) {
+                                if ((favorites.value.firstOrNull { it.icao24 == plane.icao24 }) == null) {
                                     favsViewModel.addFavorite(plane)
                                 } else {
                                     favsViewModel.removeFavoriteByIcao(plane.icao24)
@@ -183,9 +200,13 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
                             var icon =
                                 if ((favorites.value.firstOrNull { it.icao24 == plane?.icao24 ?: "VERY CONFUSING ICAO STRING" }) != null) {
                                     Icons.Filled.Star
-                                }   else Icons.Outlined.StarOutline
-                            Icon(imageVector = icon,
-                                contentDescription = null, tint = Color.Yellow, modifier = Modifier.size(40.dp))
+                                } else Icons.Outlined.StarOutline
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = Color.Yellow,
+                                modifier = Modifier.size(40.dp)
+                            )
 
                         }
                     }
@@ -193,12 +214,41 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
                 }
 
-                Text("ICAO24: ${plane?.icao24 ?: "???"}")
-                Text("Callsign: ${plane?.callsign ?: "???"}")
-                Text("Origin: ${plane?.originCountry ?: "???"}")
-                Text("Type: ${planeInfo?.typeName ?: "???"}")
-                Text("Registration: ${planeInfo?.reg ?: "???"}")
-                Text("Operated by: ${planeInfo?.airlineName ?: "???"}")
+                LazyColumn(contentPadding = PaddingValues(bottom = 100.dp)) {
+                    item {
+                        Row(horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(countryCodeToEmojiFlag(flight?.departure?.airport?.countryCode ?: "???",
+                                ), fontSize = 44.sp)
+                                Text(flight?.departure?.airport?.municipalityName ?: "???")
+                            }
+                            Text("➡", fontSize = 32.sp)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(countryCodeToEmojiFlag(flight?.arrival?.airport?.countryCode ?: "???",
+                                ), fontSize = 44.sp)
+                                Text(flight?.arrival?.airport?.municipalityName ?: "???")
+                            }
+                        }
+                    }
+                    item {
+                        InfoTile(title = "Estimated arrival time (UTC)",
+                            text = flight?.arrival?.scheduledTimeUtc ?: "???")
+                    }
+                    item {
+                        InfoTile(title = "Operated by", text = flight?.airline?.name ?: "???")
+                    }
+                    item {
+                        InfoTile(title = "ICAO24", text = plane?.icao24 ?: "???")
+                    }
+                    item {
+                        InfoTile(title = "Callsign", text = plane?.callsign ?: "???")
+                    }
+                    item {
+                        InfoTile(title = "Registration", text = flight?.aircraft?.reg ?: "???")
+                    }
+
+                }
 
             }
         }
@@ -232,10 +282,24 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
 }
 
+@Composable
+fun InfoTile(title: String, text: String) {
+    Card(elevation = 3.dp, modifier = Modifier
+        .padding(10.dp)
+        .fillMaxWidth()){
+        Column(){
+            Text(title, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(10.dp))
+            Text(text, fontSize = 24.sp, modifier = Modifier.padding(horizontal = 10.dp))
+        }
+
+
+    }
+}
+
 fun updateMarkers(model: MapViewModel, markers: List<MarkerOptions>) {
     val handler = Handler(Looper.getMainLooper())
     var x = 0
-    val DELAY: Long = 3
+    val DELAY: Long = 1
     if (model.mMap != null) {
         model.mMap!!.clear()
         markers.forEach {
@@ -251,6 +315,20 @@ fun updateMarkers(model: MapViewModel, markers: List<MarkerOptions>) {
         }
 
     }
+}
+
+fun countryCodeToEmojiFlag(countryCode: String): String {
+    return countryCode
+        .uppercase()
+        .map { char ->
+            Character.codePointAt("$char", 0) - 0x41 + 0x1F1E6
+        }
+        .map { codePoint ->
+            Character.toChars(codePoint)
+        }
+        .joinToString(separator = "") { charArray ->
+            String(charArray)
+        }
 }
 
 
