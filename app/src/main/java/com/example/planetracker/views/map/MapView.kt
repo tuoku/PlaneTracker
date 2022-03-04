@@ -74,7 +74,6 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
     val bottomState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
     val coroutineScope = rememberCoroutineScope()
-    val builtMarkers: MutableList<Marker> = mutableListOf()
 
 
 
@@ -93,19 +92,18 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
         if (it.latitude != null && it.longitude != null && model.mMap != null) {
 
-            if(SphericalUtil.computeDistanceBetween(helsinki, LatLng(it.latitude,it.longitude)) <= 1500000) {
-                markers.add(
-                    MarkerOptions()
-                        .title(it.icao24)
-                        .position(LatLng(it.latitude, it.longitude))
-                        .icon(
-                            BitmapDescriptorFactory.fromResource(R.drawable.aeroplane)
-                        )
-                        .flat(true)
+                    markers.add(
+                        MarkerOptions()
+                            .title(it.icao24)
+                            .position(LatLng(it.latitude, it.longitude))
+                            .icon(
+                                BitmapDescriptorFactory.fromResource(R.drawable.aeroplane)
+                            )
+                            .flat(true)
 
-                        .rotation(it.trueTrack?.toFloat() ?: 0f)
-                )
-            }
+                            .rotation(it.trueTrack?.toFloat() ?: 0f)
+                    )
+
         }
 
 
@@ -313,15 +311,22 @@ fun updateMarkers(model: MapViewModel, markers: List<MarkerOptions>) {
     var x = 0
     val DELAY: Long = 1
     if (model.mMap != null) {
-        model.mMap!!.clear()
+       // model.mMap!!.clear()
         markers.forEach {
 
             handler.postDelayed(
                 {
                     try {
-                        val marker = model.mMap!!.addMarker(it)
-                        marker!!.tag =
-                            model.allPlanes.value?.find { plane -> plane.icao24 == it.title }
+                        val mark: Marker? = model.builtMarkers.firstOrNull {m -> m.title == it.title}
+                        if(mark == null) {
+                            val marker = model.mMap!!.addMarker(it)
+                            marker!!.tag =
+                                model.allPlanes.value?.find { plane -> plane.icao24 == it.title }
+                            model.builtMarkers.add(marker)
+                        } else {
+                            mark.position = it.position
+                        }
+
                     } catch (e: Exception) {
                         print(e.message)
                     }

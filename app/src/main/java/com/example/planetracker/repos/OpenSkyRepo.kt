@@ -15,7 +15,8 @@ class OpenSkyRepo {
 
     suspend fun getAllPlanes(): List<Plane> {
         val states = call.allPlanes().states ?: emptyList()
-        return constructPlanes(states)
+        val planes = constructPlanes(states)
+        return planes.subList(0, 199)
     }
 
     suspend fun getPlanesByBounds(lamax: String, lomax: String, lamin: String, lomin: String): List<Plane> {

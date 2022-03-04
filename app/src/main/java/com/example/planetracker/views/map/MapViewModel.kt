@@ -13,6 +13,7 @@ import com.example.planetracker.models.flight.Flight
 import com.example.planetracker.repos.AeroDataBoxRepo
 import com.example.planetracker.repos.OpenSkyRepo
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.Marker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -51,13 +52,16 @@ class MapViewModel : ViewModel() {
 
     val planesInRegion = MutableLiveData<List<Plane>>()
 
+    val builtMarkers: MutableList<Marker> = mutableListOf()
+
+
     // Bounds for europe
     val lamin = "34.885931"
     val lamax = "71.965388"
     val lomin = "-21.445313"
     val lomax = "46.933594"
 
-    private val refreshIntervalMillis = 0
+    private val refreshIntervalMillis = 1000
 
     fun invalidateInfos() {
         _flight.postValue(null)
