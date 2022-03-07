@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.planetracker.apis.AeroDataBoxAPI
 import com.example.planetracker.ui.theme.PlaneTrackerTheme
 import com.example.planetracker.views.ar.ARView
+import com.example.planetracker.views.favorite.FavoriteView
 import com.example.planetracker.views.favs.FavsView
 import com.example.planetracker.views.favs.FavsViewModel
 import com.example.planetracker.views.map.GoogleMaps
@@ -80,8 +81,9 @@ class MainActivity : ComponentActivity() {
                 }) {
                     NavHost(navController, startDestination = Screen.Map.route) {
                         composable(Screen.Map.route) { GoogleMaps(model = mapModel, favsViewModel = favsViewModel) }
-                        composable(Screen.Favorites.route) { FavsView(favsViewModel) }
+                        composable(Screen.Favorites.route) { FavsView(favsViewModel, navController = navController) }
                         composable(Screen.AR.route) { ARView(LocalContext.current) }
+                        composable(Screen.Favorite.route) { backStackEntry -> FavoriteView(backStackEntry.arguments?.getString("icao"), mapViewModel = mapModel) }
                     }
 
                 }
@@ -99,6 +101,7 @@ sealed class Screen(val route: String, val label: String) {
     object Map : Screen("map", "Map")
     object Favorites: Screen("favs", "Favorites")
     object AR : Screen("ar", "AR")
+    object Favorite: Screen("fav/{icao}", "Favorite")
 }
 
 val items = listOf(

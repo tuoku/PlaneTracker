@@ -1,5 +1,6 @@
 package com.example.planetracker.views.favs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,9 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun FavsView(viewModel: FavsViewModel) {
+fun FavsView(viewModel: FavsViewModel, navController: NavController) {
+
     val favsList = viewModel.getFavorites().observeAsState(listOf())
     LazyColumn {
         items(favsList.value) {
@@ -28,6 +32,7 @@ fun FavsView(viewModel: FavsViewModel) {
                 elevation = 2.dp, modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
+                    .clickable { navController.navigate("fav/${it.icao24}") }
             ) {
                 Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text(it.toString(), Modifier.padding(start = 6.dp))
