@@ -61,7 +61,7 @@ class MapViewModel : ViewModel() {
     val lomin = "-21.445313"
     val lomax = "46.933594"
 
-    private val refreshIntervalMillis = 1000
+    private val refreshIntervalMillis = 0
 
     fun invalidateInfos() {
         _flight.postValue(null)
