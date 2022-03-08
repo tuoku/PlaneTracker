@@ -16,68 +16,54 @@ import com.google.android.gms.maps.model.CameraPosition
 
 class ARViewModel(context: Context) : ViewModel(), SensorEventListener {
 
+    enum class CompassCoordinateSystem { POCKET_COMPASS, REAR_CAMERA }
+
     var mMap: GoogleMap? = null
-    var orientation: FloatArray? = null
+
     private val sm: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private var sMagnetic: Sensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).also {
-        sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
-    }
-    private var sAccelerometer: Sensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER).also {
+    private var sRotation: Sensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR).also {
         sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
     }
 
-    private val _magneticValue: MutableLiveData<FloatArray> = MutableLiveData()
-    val magneticValue: LiveData<FloatArray> = _magneticValue
 
-    private val _accelerometerValue: MutableLiveData<FloatArray> = MutableLiveData()
-    val accelerometerValue: LiveData<FloatArray> = _accelerometerValue
+    private var orientation3D = FloatArray(3)
+    private var coordinateSystem = CompassCoordinateSystem.REAR_CAMERA
 
-    fun updateMagneticValue(value: FloatArray) {
-        _magneticValue.value = value
-    }
+    fun compassDegrees(): Float = azimuthToDegrees(compassRadians())
+    fun compassRadians(): Float = orientation3D[0]
 
-    fun updateAccelerometerValue(value: FloatArray) {
-        _accelerometerValue.value = value
+    /** Convert such that North=0, East=90, South=180, West=270. */
+    fun azimuthToDegrees(azimuth: Float): Float {
+        return ((Math.toDegrees(azimuth.toDouble())+360) % 360).toFloat()
     }
 
     override fun onSensorChanged(p0: SensorEvent?) {
         p0 ?: return
-        if (p0.sensor == sMagnetic) {
-            updateMagneticValue(p0.values)
-            updateOrientation()
-        }
-        if(p0.sensor == sAccelerometer) {
-            updateAccelerometerValue(p0.values)
-            updateOrientation()
-        }
-    }
 
-    fun updateOrientation() {
-        if(accelerometerValue.value != null && magneticValue.value != null) {
+        if (p0.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
             val rotationMatrix = FloatArray(9)
-            SensorManager.getRotationMatrix(
-                rotationMatrix,
-                null,
-                accelerometerValue.value,
-                magneticValue.value
-            )
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, p0.values)
+            when (coordinateSystem) {
+                CompassCoordinateSystem.POCKET_COMPASS -> SensorManager.getOrientation(rotationMatrix, orientation3D)
+                CompassCoordinateSystem.REAR_CAMERA -> {
+                    val rearCameraMatrix = FloatArray(9)
+                    // The axis parameters for remapCoordinateSystem() are
+                    // from an example in that method's documentation
+                    SensorManager.remapCoordinateSystem(rotationMatrix,
+                        SensorManager.AXIS_X,
+                        SensorManager.AXIS_Z,
+                        rearCameraMatrix)
+                    SensorManager.getOrientation(rearCameraMatrix, orientation3D)
+                    if(mMap != null) {
+                        val cameraPos = mMap!!.cameraPosition
+                        val pos = CameraPosition.builder(cameraPos).bearing(compassDegrees()).build() // radians to degrees
+                        mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
+                    }
 
-// Express the updated rotation matrix as three orientation angles.
-            val orientationAngles = FloatArray(3)
-            SensorManager.getOrientation(rotationMatrix, orientationAngles)
-            orientation = orientationAngles
-            if (mMap != null) {
-                Log.d("AZIMUTH", (((Math.toDegrees(
-                    orientationAngles[0].toDouble()
-                ) + 180.0).toFloat()).toString()))
-
-                val cameraPos = mMap!!.cameraPosition
-                val pos = CameraPosition.builder(cameraPos).bearing(((Math.toDegrees(
-                    orientationAngles[0].toDouble()
-                ) + 360).toFloat() % 360)).build() // radians to degrees
-                mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(pos))
+                }
             }
         }
+
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
