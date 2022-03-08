@@ -42,3 +42,4 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 ## Attributions
 A big thanks to
 * [@bhurling](https://gist.github.com/bhurling) for [country codes to emoji flags](https://gist.github.com/bhurling/c955c778f7a0765aaffd9214b12b3963)
+* [David Leppik](https://stackoverflow.com/users/18078/david-leppik) for [remap coordinate system to account for rear camera](https://stackoverflow.com/a/53547852)
