@@ -9,7 +9,6 @@ Uses [OpenSky API](https://opensky-network.org/) and [AeroDataBox API](https://w
 * Tap a plane to see information about the plane and its flight, including an image of the actual aircraft
 * Save planes as favorites and check where they're flying later
 * See information about planes flying around you simply by pointing your phone at them
-* See which planes are currently flying at the fastest speeds in the world, which are flying the highest and more
 
 ## Getting started
 1. Clone this repository or download the .zip
