@@ -85,7 +85,7 @@ fun GoogleMaps(model: MapViewModel, favsViewModel: FavsViewModel) {
 
 
     LaunchedEffect(true) {
-        model.getAllPlanes()
+        model.getPlanesByBounds()
     }
 
     planes?.forEach {

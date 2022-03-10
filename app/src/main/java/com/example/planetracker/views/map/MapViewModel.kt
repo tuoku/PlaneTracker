@@ -14,6 +14,7 @@ import com.example.planetracker.repos.AeroDataBoxRepo
 import com.example.planetracker.repos.OpenSkyRepo
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -52,14 +53,15 @@ class MapViewModel : ViewModel() {
 
     val planesInRegion = MutableLiveData<List<Plane>>()
 
+    val markerOptions: MutableList<MarkerOptions> = mutableListOf()
     val builtMarkers: MutableList<Marker> = mutableListOf()
 
 
-    // Bounds for europe
-    val lamin = "34.885931"
-    val lamax = "71.965388"
-    val lomin = "-21.445313"
-    val lomax = "46.933594"
+    // Bounds for northern europe
+    val lamin = "57.3000"
+    val lamax = "70.1000"
+    val lomin = "5.2000"
+    val lomax = "32.0000"
 
     private val refreshIntervalMillis = 0
 
@@ -140,9 +142,34 @@ class MapViewModel : ViewModel() {
     }
 
     fun getPlanesByBounds() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val serverResp = openSkyRepo.getPlanesByBounds(lamin = lamin, lomin = lomin, lomax = lomax, lamax = lamax)
-            planesInRegion.postValue(serverResp)
+        if (refreshIntervalMillis == 0) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val serverResp = openSkyRepo.getPlanesByBounds(
+                    lamin = lamin,
+                    lomin = lomin,
+                    lomax = lomax,
+                    lamax = lamax
+                )
+                planeImpl.clear()
+                planeImpl.addAll(serverResp)
+                // _allPlanes.postValue(null)
+                _allPlanes.postValue(planeImpl)
+            }
+        } else {
+            Timer().scheduleAtFixedRate(timerTask {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val serverResp = openSkyRepo.getPlanesByBounds(
+                        lamin = lamin,
+                        lomin = lomin,
+                        lomax = lomax,
+                        lamax = lamax
+                    )
+                    planeImpl.clear()
+                    planeImpl.addAll(serverResp)
+                    // _allPlanes.postValue(null)
+                    _allPlanes.postValue(planeImpl)
+                }
+            }, refreshIntervalMillis.toLong(),refreshIntervalMillis.toLong())
         }
     }
 

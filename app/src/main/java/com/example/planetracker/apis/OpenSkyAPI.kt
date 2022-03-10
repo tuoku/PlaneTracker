@@ -34,7 +34,7 @@ object OpenSkyAPI {
             @Query("lamin")lamin: String,
             @Query("lomin")lomin: String,
             @Query("lamax")lamax: String,
-            @Query("lamin")lomax: String): Model.Res
+            @Query("lomax")lomax: String): Model.Res
     }
 
     private val retrofit = Retrofit.Builder()
