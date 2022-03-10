@@ -17,8 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.planetracker.apis.AeroDataBoxAPI
+import com.example.planetracker.models.flight.Flight
 import com.example.planetracker.ui.theme.PlaneTrackerTheme
 import com.example.planetracker.views.ar.ARView
+import com.example.planetracker.views.ar.ARViewModel
 import com.example.planetracker.views.favorite.FavoriteView
 import com.example.planetracker.views.favs.FavsView
 import com.example.planetracker.views.favs.FavsViewModel
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
         AeroDataBoxAPI.setContext(this)
 
         favsViewModel = FavsViewModel(application)
+        arViewModel = ARViewModel(applicationContext)
 
         mapView = MapView(this)
         setContent {
@@ -82,7 +85,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController, startDestination = Screen.Map.route) {
                         composable(Screen.Map.route) { GoogleMaps(model = mapModel, favsViewModel = favsViewModel) }
                         composable(Screen.Favorites.route) { FavsView(favsViewModel, navController = navController) }
-                        composable(Screen.AR.route) { ARView(LocalContext.current) }
+                        composable(Screen.AR.route) { ARView(arViewModel, mapViewModel = mapModel) }
                         composable(Screen.Favorite.route) { backStackEntry -> FavoriteView(backStackEntry.arguments?.getString("icao"), mapViewModel = mapModel) }
                     }
 
@@ -93,7 +96,8 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private lateinit var favsViewModel: FavsViewModel
-
+        private lateinit var arViewModel: ARViewModel
+        val arFlights = mutableListOf<Flight>()
     }
 }
 
